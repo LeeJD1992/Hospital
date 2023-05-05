@@ -8,6 +8,13 @@
   },
   "author": "Lee Donald",
   "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "ejs": "^3.1.6",
+    "express": "^4.17.2",
+    "mysql2": "^2.3.0",
+    "express-session": "^1.17.2"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ayushman1024/Hospital-Management-Using-Servlets.git"

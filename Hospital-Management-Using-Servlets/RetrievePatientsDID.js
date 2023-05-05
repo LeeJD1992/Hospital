@@ -2,10 +2,8 @@ const express = require('express');
 const app = express();
 
 app.get('/RetrievePatientsDID', async (req, res) => {
-  const out = res.send.bind(res);
   const connection = await getConnection();
   const did = req.query.did;
-  console.log(did);
   const sql = `SELECT patients, name FROM doctor WHERE did = ${did}`;
 
   try {
@@ -17,7 +15,7 @@ app.get('/RetrievePatientsDID', async (req, res) => {
     const rrr = await s.executeQuery('SELECT * FROM patient');
     const rms = rrr.getMetaData();
     res.set('Content-Type', 'text/html');
-    out(`
+    res.write(`
       <style>
         table {
           font-family: arial, sans-serif;
@@ -48,35 +46,36 @@ app.get('/RetrievePatientsDID', async (req, res) => {
           <th>${rms.getColumnName(10)}</th>
           <th>${rms.getColumnName(11)}</th>
         </tr>
-        ${pList
-          .filter((p) => parseInt(p) >= 0)
-          .map(async (p) => {
-            const ss = await connection.createStatement();
-            const rr = await ss.executeQuery(
-              `SELECT * FROM patient WHERE pid = ${p}`
-            );
-            rr.next();
-            return `
-              <tr>
-                <td>${rr.getString(1)}</td>
-                <td>${rr.getString(2)}</td>
-                <td>${rr.getString(3)}</td>
-                <td>${rr.getString(4)}</td>
-                <td>${rr.getString(5)}</td>
-                <td>${rr.getString(6)}</td>
-                <td>${rr.getString(7)}</td>
-                <td>${rr.getString(8)}</td>
-                <td>${rr.getString(9)}</td>
-                <td>${rr.getString(10)}</td>
-                <td>${rr.getString(11)}</td>
-              </tr>
-            `;
-          })}
-      </table>
     `);
+    
+    for (const p of pList.filter((p) => parseInt(p) >= 0)) {
+      const ss = await connection.createStatement();
+      const rr = await ss.executeQuery(`SELECT * FROM patient WHERE pid = ${p}`);
+      rr.next();
+      res.write(`
+        <tr>
+          <td>${rr.getString(1)}</td>
+          <td>${rr.getString(2)}</td>
+          <td>${rr.getString(3)}</td>
+          <td>${rr.getString(4)}</td>
+          <td>${rr.getString(5)}</td>
+          <td>${rr.getString(6)}</td>
+          <td>${rr.getString(7)}</td>
+          <td>${rr.getString(8)}</td>
+          <td>${rr.getString(9)}</td>
+          <td>${rr.getString(10)}</td>
+          <td>${rr.getString(11)}</td>
+        </tr>
+      `);
+    }
+    
+    res.write(`</table>`);
+    res.end();
   } catch (e) {
     console.error(e);
     res.status(500).send('Internal Server Error');
+  } finally {
+    connection.close();
   }
 });
 

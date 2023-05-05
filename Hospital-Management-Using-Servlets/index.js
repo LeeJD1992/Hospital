@@ -1,29 +1,23 @@
-const http = require('http');
-const fs = require('fs');
+const express = require('express');
+const app = express();
 const path = require('path');
 
-const hostname = '0.0.0.0';
 const port = 3000;
 
-// Create the HTTP server
-const server = http.createServer((req, res) => {
-  // Check if the request is for the root path
-  if (req.url === '/') {
-    // Read the HTML file from disk
-    const file = fs.readFileSync(path.join(__dirname, 'index.html'));
-    // Set the Content-Type header and write the response
-    res.writeHead(200, {'Content-Type': 'text/html'});
-    res.write(file);
-    res.end();
-  } else {
-    // If the requested path is not the root, send a 404 error
-    res.writeHead(404, {'Content-Type': 'text/plain'});
-    res.write('404 Not Found');
-    res.end();
-  }
+// Serve the static files in the public directory
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Handle requests to the root path
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Handle all other requests with a 404 error
+app.use((req, res) => {
+  res.status(404).send('404 Not Found');
 });
 
 // Start the server
-server.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
+app.listen(port, () => {
+  console.log(`Server running at http://localhost:${port}/`);
 });
